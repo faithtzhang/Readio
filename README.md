@@ -1,5 +1,6 @@
 # Readio  
 📚 **Reading Companion — Audio-First Edition**
+
 Readio is an audio-first reading companion designed to reignite a love for reading in today’s fast-paced, screen-heavy world. By combining smart book discovery, bite-sized AI-generated audio summaries, and personalized voice experiences, Readio makes books more accessible, engaging, and enjoyable for everyone.
 
 It turns reading into a “reel-like” experience—quick, compelling, and habit-forming—perfect for micro-learners, commuters, and digital natives. Whether it’s children developing literacy, older adults seeking gentle narration, or young professionals fitting stories into their scroll-time, Readio meets people where they are. With voices that resonate, formats that fit, and stories that stick, Readio transforms curiosity into a lifelong reading habit.
