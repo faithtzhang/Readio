@@ -2,7 +2,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 from app.config import settings
 
-def generate_audio(script: str) -> str:
+def generate_audio(script: str, voice_id: str = "Joanna") -> str:
     polly_client = boto3.client(
         "polly",
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -14,7 +14,7 @@ def generate_audio(script: str) -> str:
         response = polly_client.synthesize_speech(
             Text=script,
             OutputFormat="mp3",
-            VoiceId="Joanna",  # Choose appropriate voice
+            VoiceId=voice_id,  # Choose appropriate voice
         )
 
         audio_stream = response.get("AudioStream")
