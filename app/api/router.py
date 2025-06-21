@@ -11,11 +11,11 @@ async def generate_video(request: BookRecommendationRequest):
     audio_url = generate_audio(script)
     return BookRecommendationResponse(video_url=video_url, audio_url=audio_url)
 
-@router.post("/summarize/")
-def summarize(book: dict):
-    script = generate_summary(book["summary"], book.get("voice_style", "Neutral"))
-    return {"script": script}
+# @router.post("/summarize/")
+# def summarize(book: dict):
+#     script = generate_summary(book["summary"], book.get("voice_style", "Neutral"))
+#     return {"script": script}
 
-@router.post("/tts/")
-def text_to_audio(req: dict):
-    return {"audio_url": synthesize(req["script"], req["voice_id"])}
+# @router.post("/tts/")
+# def text_to_audio(req: dict):
+#     return {"audio_url": synthesize(req["script"], req["voice_id"])}

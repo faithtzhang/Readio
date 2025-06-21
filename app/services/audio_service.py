@@ -1,8 +1,31 @@
-import requests
-from app.core.config import PLAYHT_API_KEY
+import boto3
+from botocore.exceptions import NoCredentialsError
+from app.config import settings
 
-def synthesize(text: str, voice_id: str) -> str:
-    headers = {"Authorization": f"Bearer {PLAYHT_API_KEY}"}
-    payload = {"voice": voice_id, "content": text}
-    response = requests.post("https://api.play.ht/convert", json=payload, headers=headers)
-    return response.json().get("audio_url")
+def generate_audio(script: str) -> str:
+    polly_client = boto3.client(
+        "polly",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_REGION,
+    )
+
+    try:
+        response = polly_client.synthesize_speech(
+            Text=script,
+            OutputFormat="mp3",
+            VoiceId="Joanna",  # Choose appropriate voice
+        )
+
+        audio_stream = response.get("AudioStream")
+        if audio_stream:
+            audio_path = "audio.mp3"
+            with open(audio_path, "wb") as file:
+                file.write(audio_stream.read())
+            return audio_path
+        else:
+            return "Error: No audio stream returned."
+    except NoCredentialsError:
+        return "Error: AWS credentials not found."
+    except Exception as e:
+        return f"Error generating audio: {str(e)}"
