@@ -10,11 +10,7 @@ from typing import List, Optional
 router = APIRouter()
 
 # Initialize services
-try:
-    video_processor = VideoProcessor()
-except Exception as e:
-    print(f"Warning: Could not initialize VideoProcessor: {e}")
-    video_processor = None
+video_processor = VideoProcessor()
 
 @router.post("/recommend/")
 def recommend(payload: dict):
@@ -63,9 +59,6 @@ async def upload_video(video: UploadFile = File(...)):
 @router.post("/video/process")
 def process_video(request: dict):
     """Process video with complete analysis and dubbing pipeline."""
-    if not video_processor:
-        raise HTTPException(status_code=500, detail="Video processor not available")
-    
     try:
         video_path = request.get("video_path")
         output_dir = request.get("output_dir", "output")
@@ -99,9 +92,6 @@ def process_video(request: dict):
 @router.post("/video/analyze")
 def analyze_video(request: dict):
     """Analyze video content only without audio generation."""
-    if not video_processor:
-        raise HTTPException(status_code=500, detail="Video processor not available")
-    
     try:
         video_path = request.get("video_path")
         
@@ -122,9 +112,6 @@ def analyze_video(request: dict):
 @router.post("/video/dub")
 def dub_video(request: dict):
     """Generate audio dub for existing script."""
-    if not video_processor:
-        raise HTTPException(status_code=500, detail="Video processor not available")
-    
     try:
         script = request.get("script")
         video_path = request.get("video_path")
@@ -151,9 +138,6 @@ def dub_video(request: dict):
 @router.get("/video/status/{video_path:path}")
 def get_video_status(video_path: str):
     """Get processing status and available options for a video."""
-    if not video_processor:
-        raise HTTPException(status_code=500, detail="Video processor not available")
-    
     try:
         result = video_processor.get_processing_status(video_path)
         
@@ -169,9 +153,6 @@ def get_video_status(video_path: str):
 @router.post("/video/batch")
 def batch_process_videos(request: dict):
     """Process multiple videos in batch."""
-    if not video_processor:
-        raise HTTPException(status_code=500, detail="Video processor not available")
-    
     try:
         video_paths = request.get("video_paths", [])
         output_dir = request.get("output_dir", "batch_output")
@@ -210,23 +191,8 @@ def get_available_perspectives():
 @router.get("/video/voices")
 def get_available_voices():
     """Get available AWS Polly voices."""
-    if not video_processor:
-        raise HTTPException(status_code=500, detail="Video processor not available")
-    
     try:
         voices = video_processor.audio_dubber.get_available_voices()
         return voices
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get voices: {str(e)}")
-
-@router.get("/health")
-def health_check():
-    """Health check endpoint."""
-    return {
-        "status": "healthy",
-        "services": {
-            "video_processor": video_processor is not None,
-            "tts_service": True,
-            "recommender": True
-        }
-    }
