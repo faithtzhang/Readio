@@ -1,4 +1,4 @@
-# Readlytic
+# Readio
 📚 Reading Companion — Audio-First Edition (Unified Concept)
 1. Smart Book Discovery
 Personalized search & AI-powered recommendations:
