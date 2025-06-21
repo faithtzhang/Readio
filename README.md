@@ -7,10 +7,9 @@ Personalized search & AI-powered recommendations:
 Users input preferences—genres, moods, favorite authors, reading goals.
 
 
-The system also analyzes trending topics or user behavior (browse history, ratings).
-
-
 Applies hybrid recommender algorithms (collaborative + content-based filtering + LLM-powered reasoning) to uncover both mainstream and hidden gems psychologytoday.com+3reddit.com+3trendhunter.com+3en.wikipedia.org+13medium.com+13huntscreens.com+13en.wikipedia.org.
+
+Future directions: The system also analyzes trending topics or user behavior (browse history, ratings).
 
 
 Pulls data from platforms like Qloo, The Hawaii Project, StoryGraph, and emerging players to enrich discovery en.wikipedia.org+2en.wikipedia.org+2en.wikipedia.org+2.
