@@ -23,6 +23,6 @@ def recommend_by_labels(user_labels, top_n=5):
     reranked = rerank_with_llama4(user_labels, candidates)
     return reranked
 
-def generate_video_script(book):
-    content = generate_summary(recommend_by_labels(user_labels))
+def generate_video_script(labels):
+    content = generate_summary(recommend_by_labels(labels))
     return f"Generate a video to recommend this amazing book: " + content
