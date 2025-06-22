@@ -5,6 +5,7 @@ client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=settings.LL
 
 # recommend
 def rerank_with_llama4(user_labels, candidates):
+    client = get_client()
     prompt = f"User is interested in: {', '.join(user_labels)}.\nCandidates:\n"
     for i, c in enumerate(candidates, 1):
         prompt += f"{i}. {c['title']}: {c.get('description', 'No description')}\n"
@@ -18,6 +19,7 @@ def rerank_with_llama4(user_labels, candidates):
 
 # summary
 def generate_summary(text: str) -> str:
+    client = get_client()
     prompt = f"""
     Recommend the following book to user, summarize into a 3-minute audio-ready script.
     ---

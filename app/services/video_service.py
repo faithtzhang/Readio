@@ -1,10 +1,12 @@
 import os
+import tempfile
 from typing import Dict, Optional
-from app.services.llama4_service import client
+from app.services.llama4_service import get_client
+from app.services.audio_service import generate_audio
 
 
 class VideoService:
-    """Service for extracting text from video using Llama API."""
+    """Service for extracting text from video using Llama API and generating audio."""
     
     def __init__(self):
         self.perspectives = {
@@ -15,12 +17,19 @@ class VideoService:
             "technical": "Detailed and technical explanations"
         }
     
-    def process_video_to_text(self, video_path: str, perspective: Optional[str] = None) -> Dict:
-        """Extract text from video using Llama API."""
+    def process_video_to_audio(self, video_file, perspective: Optional[str] = None) -> Dict:
+        """Extract text from video file and generate audio."""
         try:
+            # Save uploaded file temporarily
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
+                temp_file.write(video_file.read())
+                temp_path = temp_file.name
+            
+            client = get_client()
+            
             # Analyze video
             analysis_prompt = f"""
-            Analyze this video at {video_path} and provide insights on:
+            Analyze this video at {temp_path} and provide insights on:
             1. Visual content and scenes
             2. Charts, graphs, or data visualizations
             3. Text overlays or captions
@@ -56,12 +65,25 @@ class VideoService:
             
             script = script_response.choices[0].message.content or ""
             
+            # Generate audio from script
+            audio_url = generate_audio(script)
+            
+            # Clean up temp file
+            os.unlink(temp_path)
+            
             return {
                 "success": True,
-                "video_path": video_path,
                 "text": script,
+                "audio_url": audio_url,
                 "perspective": perspective or "neutral"
             }
             
         except Exception as e:
+            # Clean up temp file on error
+            if 'temp_path' in locals():
+                try:
+                    os.unlink(temp_path)
+                except:
+                    pass
             return {"success": False, "error": str(e)}
+        
