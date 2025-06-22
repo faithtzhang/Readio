@@ -37,8 +37,7 @@ def summarize_video_with_frames(frame_urls: list[str], duration, perspective: st
         "Here is the perspective setting: \n" + perspective + "\n\n"
         "And here are key frames (as URLs):\n" +
         "\n".join(frame_urls) +
-        "\n\nPlease imagine the video based on the frames of it, then generate a narration for the video, do not exceed video length (" + 
-        str(duration) + " frames). Only return description content."
+        "\n\nPlease imagine the video based on the frames of it, then generate a narration for the video, do not exceed 9s. Only return description content."
     )
     resp = client.chat.completions.create(
         model="Llama-4-Maverick-17B-128E-Instruct-FP8",
