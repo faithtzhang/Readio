@@ -1,17 +1,7 @@
 from openai import OpenAI
-from app.core.config import LLAMA4_API_KEY
+from app.config import settings
 
-# Create client lazily to avoid import-time errors
-_client = None
-
-def get_client():
-    """Get the OpenAI client, creating it if necessary."""
-    global _client
-    if _client is None:
-        if not LLAMA4_API_KEY:
-            raise ValueError("LLAMA4_API_KEY environment variable is not set")
-        _client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=LLAMA4_API_KEY)
-    return _client
+client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=settings.LLAMA4_API_KEY)
 
 # recommend
 def rerank_with_llama4(user_labels, candidates):
