@@ -32,9 +32,6 @@ async def generate_video(request: GenerateVideoRequest):
 
 @router.post("/video/analyze")
 async def analyze_video(request: VideoPathRequest):
-    print("📁 当前路径：", os.getcwd())
-    print("📂 请求文件路径：", request.path)
-    print("🧪 文件是否存在：", os.path.isfile(request.path))
     if not video_service:
         raise HTTPException(status_code=500, detail="Video service not available")
     
@@ -44,7 +41,6 @@ async def analyze_video(request: VideoPathRequest):
     try:
         result = video_service.process_video_to_audio(request.path, request.perspective)
     except Exception as e:
-        print("❌ 错误信息：", repr(e))
         raise HTTPException(status_code=500, detail=str(e))
     
     return result
