@@ -21,25 +21,11 @@ async def generate_video(labels: list):
     return {"script": script, "audio_url": audio_url}
 
 @router.post("/video/analyze")
-def analyze_video(request: dict):
+async def analyze_video(video: UploadFile = File(...), perspective: str = "professional"):
     if not video_service:
         raise HTTPException(status_code=500, detail="Video service not available")
     
-    video_path = request.get("video_path")
-    if not video_path:
-        raise HTTPException(status_code=400, detail="Video path required")
-    return video_service.process_video_to_text(video_path, request.get("perspective"))
-
-@router.post("/video/upload")
-async def upload_video(video: UploadFile = File(...)):
-    if not video.filename:
-        raise HTTPException(status_code=400, detail="Filename required")
+    result = video_service.process_video_to_audio(video.file, perspective)
+    result["filename"] = video.filename
     
-    upload_dir = "uploads"
-    os.makedirs(upload_dir, exist_ok=True)
-    
-    video_path = os.path.join(upload_dir, video.filename)
-    with open(video_path, "wb") as buffer:
-        shutil.copyfileobj(video.file, buffer)
-    
-    return {"video_path": video_path, "filename": video.filename}
+    return result
