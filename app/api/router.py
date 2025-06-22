@@ -17,8 +17,9 @@ except Exception as e:
 @router.post("/generate_video/")
 async def generate_video(labels: list):
     script = generate_video_script(labels)
+    video_url = video_service.generate_video_content(script)
     audio_url = generate_audio(script)
-    return {"script": script, "audio_url": audio_url}
+    return {"video_url": video_url, "audio_url": audio_url}
 
 @router.post("/video/analyze")
 async def analyze_video(video: UploadFile = File(...), perspective: str = "professional"):
@@ -26,6 +27,6 @@ async def analyze_video(video: UploadFile = File(...), perspective: str = "profe
         raise HTTPException(status_code=500, detail="Video service not available")
     
     result = video_service.process_video_to_audio(video.file, perspective)
-    result["filename"] = video.filename
+    # result["filename"] = video.filename
     
     return result
