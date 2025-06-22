@@ -1,6 +1,6 @@
 import os
 from typing import Dict, Optional
-from app.services.llama4_service import client
+from app.services.llama4_service import get_client
 
 
 class VideoService:
@@ -18,6 +18,8 @@ class VideoService:
     def process_video_to_text(self, video_path: str, perspective: Optional[str] = None) -> Dict:
         """Extract text from video using Llama API."""
         try:
+            client = get_client()
+            
             # Analyze video
             analysis_prompt = f"""
             Analyze this video at {video_path} and provide insights on:
