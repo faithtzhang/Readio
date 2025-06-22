@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import router
+from app.api.router import router
 
 app = FastAPI(title="Readio")
 app.include_router(router)
