@@ -5,7 +5,6 @@ client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=settings.LL
 
 # recommend
 def rerank_with_llama4(user_labels, candidates):
-    client = get_client()
     prompt = f"User is interested in: {', '.join(user_labels)}.\nCandidates:\n"
     for i, c in enumerate(candidates, 1):
         prompt += f"{i}. {c['title']}: {c.get('description', 'No description')}\n"
@@ -18,16 +17,17 @@ def rerank_with_llama4(user_labels, candidates):
     return response.choices[0].message.content or ""
 
 # summary
-def generate_summary(text: str) -> str:
-    client = get_client()
+def generate_summary(text: str, voice_style: str = "Neutral") -> str:
     prompt = f"""
-    Recommend the following book to user, summarize into a 3-minute audio-ready script.
+    Recommend the following book to user, summarize into a 9-second audio-ready script.
+    Tone: {voice_style}
     ---
     {text}
     """
     response = client.chat.completions.create(
         model="Llama-4-Maverick-17B-128E-Instruct-FP8",
         messages=[{"role": "user", "content": prompt}],
+        max_tokens=800
     )
     return response.choices[0].message.content or ""
 
