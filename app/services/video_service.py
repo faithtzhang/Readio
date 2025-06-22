@@ -1,10 +1,10 @@
-import boto3Add
+import boto3
 import time
 from app.config import settings
 import os
 import tempfile
 from typing import Dict, Optional
-from app.services.llama4_service import get_client
+from app.services.llama4_service import client
 from app.services.audio_service import generate_audio
 
 class VideoService:
@@ -18,8 +18,44 @@ class VideoService:
             "casual": "Relaxed and friendly tone",
             "technical": "Detailed and technical explanations"
         }
+        # Initialize S3 client
+        self.s3_client = boto3.client(
+            's3',
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.AWS_REGION
+        )
 
-    def generate_video_content(script: str) -> str:
+    def download_video_from_s3(self, s3_key: str, local_path: str = None) -> str:
+        """Download video from S3 bucket."""
+        try:
+            if not local_path:
+                local_path = f"downloaded_video_{int(time.time())}.mp4"
+            
+            self.s3_client.download_file(
+                settings.S3_BUCKET_NAME,
+                s3_key,
+                local_path
+            )
+            return local_path
+        except Exception as e:
+            print(f"Error downloading video: {e}")
+            return None
+
+    def get_video_url(self, s3_key: str, expires_in: int = 3600) -> str:
+        """Generate a pre-signed URL for video download."""
+        try:
+            url = self.s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': settings.S3_BUCKET_NAME, 'Key': s3_key},
+                ExpiresIn=expires_in
+            )
+            return url
+        except Exception as e:
+            print(f"Error generating URL: {e}")
+            return None
+
+    def generate_video_content(self, script: str) -> str:
         bedrock_client = boto3.client(
             "bedrock-runtime",
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -69,8 +105,6 @@ class VideoService:
             with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
                 temp_file.write(video_file.read())
                 temp_path = temp_file.name
-            
-            client = get_client()
             
             # Analyze video
             analysis_prompt = f"""
