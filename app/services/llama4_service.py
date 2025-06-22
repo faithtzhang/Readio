@@ -1,7 +1,7 @@
 from openai import OpenAI
-from app.core.config import LLAMA4_API_KEY
+from app.config import settings
 
-client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=LLAMA4_API_KEY)
+client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=settings.LLAMA4_API_KEY)
 
 # recommend
 def rerank_with_llama4(user_labels, candidates):
