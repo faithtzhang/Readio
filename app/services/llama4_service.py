@@ -1,7 +1,7 @@
 from openai import OpenAI
-from app.core.config import settings
+from app.core.config import LLAMA4_API_KEY
 
-client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=settings.LLAMA4_API_KEY)
+client = OpenAI(base_url="https://api.llama.com/compat/v1/", api_key=LLAMA4_API_KEY)
 
 # recommend
 def rerank_with_llama4(user_labels, candidates):
@@ -14,7 +14,7 @@ def rerank_with_llama4(user_labels, candidates):
         model="Llama-4-Maverick-17B-128E-Instruct-FP8",
         messages=[{"role": "user", "content": prompt}],
     )
-    return response.choices[0].message.content
+    return response.choices[0].message.content or ""
 
 # summary
 def generate_summary(text: str) -> str:
@@ -27,6 +27,6 @@ def generate_summary(text: str) -> str:
         model="Llama-4-Maverick-17B-128E-Instruct-FP8",
         messages=[{"role": "user", "content": prompt}],
     )
-    return response.choices[0].message.content
+    return response.choices[0].message.content or ""
 
 # 3
