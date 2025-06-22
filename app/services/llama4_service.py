@@ -16,10 +16,10 @@ def rerank_with_llama4(user_labels, candidates):
     )
     return response.choices[0].message.content or ""
 
-# summary
+# text summary
 def generate_summary(text: str, voice_style: str = "Neutral") -> str:
     prompt = f"""
-    Recommend the following book to user, summarize into a 9-second audio-ready script.
+    Recommend the following book to user, summarize into a 9-second audio-ready script. Only return the summarized content.
     Tone: {voice_style}
     ---
     {text}
@@ -31,4 +31,19 @@ def generate_summary(text: str, voice_style: str = "Neutral") -> str:
     )
     return response.choices[0].message.content or ""
 
-# 3
+# video explain
+def summarize_video_with_frames(frame_urls: list[str], duration, perspective: str) -> str:
+    content = (
+        "Here is the perspective setting: \n" + perspective + "\n\n"
+        "And here are key frames (as URLs):\n" +
+        "\n".join(frame_urls) +
+        "\n\nPlease imagine the video based on the frames of it, then generate a narration for the video, do not exceed video length (" + 
+        str(duration) + " frames). Only return description content."
+    )
+    resp = client.chat.completions.create(
+        model="Llama-4-Maverick-17B-128E-Instruct-FP8",
+        messages=[{"role": "user", "content": content}],
+        max_tokens=150
+    )
+    return resp.choices[0].message.content.strip()
+

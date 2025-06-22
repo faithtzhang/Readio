@@ -1,3 +1,5 @@
+import os
+from tempfile import NamedTemporaryFile
 from boto3 import Session
 from botocore.exceptions import BotoCoreError, ClientError
 from botocore.client import Config
@@ -28,16 +30,20 @@ def generate_audio(script: str, voice_id: str = "Joanna") -> str:
     if "AudioStream" not in response:
         return "Error: No audio stream returned."
 
-    # Save to a temp file and then upload to S3
-    temp_file = "/tmp/audio.mp3"
-    try:
+    # Use a portable temporary file
+    with NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+        temp_path = tmp.name
         with closing(response["AudioStream"]) as stream:
-            with open(temp_file, "wb") as f:
-                f.write(stream.read())
-        s3_key = f"polly-audio/{uuid.uuid4().hex}.mp3"
-        s3.upload_file(temp_file, settings.S3_BUCKET_NAME, s3_key)
+            tmp.write(stream.read())
+
+    s3_key = f"polly-audio/{uuid.uuid4().hex}.mp3"
+    try:
+        s3.upload_file(temp_path, settings.S3_BUCKET_NAME, s3_key)
     except Exception as e:
+        os.remove(temp_path)
         return f"Error uploading audio file: {e}"
+
+    os.remove(temp_path)
 
     # Generate a pre-signed URL valid for 1 hour
     try:

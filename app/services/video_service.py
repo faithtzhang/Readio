@@ -1,12 +1,14 @@
 from boto3 import Session
+from botocore.client import Config
 import time
 from app.config import settings
 import os
 import tempfile
 from typing import Dict, Optional
-from app.services.llama4_service import client
+from app.services.llama4_service import summarize_video_with_frames
 from app.services.audio_service import generate_audio
-from app.utils.find_s3_key import find_latest_video_key
+from app.utils.s3_utils import find_latest_video_key, upload_and_get_url
+from app.utils.extract_video_frames import extract_frames
 
 class VideoService:
     """Service for extracting text from video using Llama API and generating audio."""
@@ -69,70 +71,18 @@ class VideoService:
         except Exception as e:
             return f"Error generating video: {str(e)}"
 
-    def process_video_to_audio(self, video_file, perspective: Optional[str] = None) -> Dict:
-        """Extract text from video file and generate audio."""
-        try:
-            # Save uploaded file temporarily
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_file:
-                temp_file.write(video_file.read())
-                temp_path = temp_file.name
-            
-            # Analyze video
-            analysis_prompt = f"""
-            Analyze this video at {temp_path} and provide insights on:
-            1. Visual content and scenes
-            2. Charts, graphs, or data visualizations
-            3. Text overlays or captions
-            4. Key themes and topics
-            5. Recommended narrative structure
-            """
-            
-            analysis_response = client.chat.completions.create(
-                model="Llama-4-Maverick-17B-128E-Instruct-FP8",
-                messages=[{"role": "user", "content": analysis_prompt}]
-            )
-            
-            video_insights = analysis_response.choices[0].message.content
-            
-            # Generate script
-            script_prompt = f"""
-            Based on the video analysis, create a comprehensive narrative script.
-            Perspective: {perspective or 'neutral'}
-            Video insights: {video_insights}
-            
-            Generate a script that:
-            1. Introduces the main topics
-            2. Explains visual elements and charts
-            3. Provides context and insights
-            4. Maintains engaging flow
-            5. Adapts to the specified perspective
-            """
-            
-            script_response = client.chat.completions.create(
-                model="Llama-4-Maverick-17B-128E-Instruct-FP8",
-                messages=[{"role": "user", "content": script_prompt}]
-            )
-            
-            script = script_response.choices[0].message.content or ""
-            
-            # Generate audio from script
-            audio_url = generate_audio(script)
-            
-            # Clean up temp file
-            os.unlink(temp_path)
-            
-            return {
-                "success": True,
-                "text": script,
-                "audio_url": audio_url,
-            }
-            
-        except Exception as e:
-            # Clean up temp file on error
-            if 'temp_path' in locals():
-                try:
-                    os.unlink(temp_path)
-                except:
-                    pass
-            return {"success": False, "error": str(e)}
+    def process_video_to_audio(self, video_path, perspective: Optional[str] = None) -> Dict:
+        """Extract text from video file and generate audio."""            
+        dict = extract_frames(video_path)
+        frames, duration = dict["frames"], dict["duration"]
+        frame_urls = upload_and_get_url(frames, settings.S3_BUCKET_NAME, settings.AWS_REGION)
+
+        script = summarize_video_with_frames(frame_urls, duration, perspective)
+        audio_url = generate_audio(script)
+        
+        return {
+            "success": True,
+            # "text": script,
+            "audio_url": audio_url,
+        }
         

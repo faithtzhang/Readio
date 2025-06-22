@@ -1,11 +1,10 @@
+import os
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import List
 from app.services.book_service import generate_video_script
 from app.services.audio_service import generate_audio
 from app.services.video_service import VideoService
-import os
-import shutil
 
 router = APIRouter()
 
@@ -13,9 +12,9 @@ router = APIRouter()
 class GenerateVideoRequest(BaseModel):
     labels: List[str]
 
-class DownloadVideoRequest(BaseModel):
-    s3_key: str
-    local_path: str = None
+class VideoPathRequest(BaseModel):
+    path: str
+    perspective: str = "professional"
 
 # Initialize video service
 try:
@@ -32,14 +31,24 @@ async def generate_video(request: GenerateVideoRequest):
     return {"video_url": video_url, "audio_url": audio_url}
 
 @router.post("/video/analyze")
-async def analyze_video(video: UploadFile = File(...), perspective: str = "professional"):
+async def analyze_video(request: VideoPathRequest):
+    print("📁 当前路径：", os.getcwd())
+    print("📂 请求文件路径：", request.path)
+    print("🧪 文件是否存在：", os.path.isfile(request.path))
     if not video_service:
         raise HTTPException(status_code=500, detail="Video service not available")
     
-    result = video_service.process_video_to_audio(video.file, perspective)
-    # result["filename"] = video.filename
+    if not os.path.isfile(request.path):
+        raise HTTPException(status_code=400, detail=f"Video file not found at {request.path}")
+
+    try:
+        result = video_service.process_video_to_audio(request.path, request.perspective)
+    except Exception as e:
+        print("❌ 错误信息：", repr(e))
+        raise HTTPException(status_code=500, detail=str(e))
     
     return result
+
 
 @router.get("/health")
 async def health_check():
