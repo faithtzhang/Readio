@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from app.services.book_service import generate_video_script
+from app.services.video_service import generate_video_content
+from app.services.audio_service import generate_audio
 
 router = APIRouter()
 
